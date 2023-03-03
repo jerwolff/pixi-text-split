@@ -1,6 +1,7 @@
 import TaggedText from "pixi-tagged-text";
 import { WebfontLoaderPlugin } from "pixi-webfont-loader";
-import { Application, Loader } from "pixi.js";
+import {Application, Loader, Ticker, utils} from "pixi.js";
+import {hsl2rgb} from "./hue2rgb";
 
 Loader.registerPlugin(WebfontLoaderPlugin)
 
@@ -22,21 +23,10 @@ loader.onComplete.add(() => start);
 
 loader.load(start);
 function start () {
-	console.log("AESDF")
-
-	// const clampy: Sprite = Sprite.from("clampy.png");
-	//
-	// clampy.anchor.set(0.5);
-	//
-	// clampy.x = app.screen.width / 2;
-	// clampy.y = app.screen.height / 2;
-	//
-	// app.stage.addChild(clampy);
 	
-	const text1 = new TaggedText("Hello", {default: {
+	const text1 = new TaggedText("Wow doesn't this look pretty?", {default: {
 			fontFamily: "Students",
-			fontSize: 120,
-			textTransform  : "capitalize",
+			fontSize: 80,
 		}}, {debugConsole: true, splitStyle: "characters"});
 	
 	// text1.interactive = true;
@@ -54,18 +44,24 @@ function start () {
 	
 	app.stage.addChild(text1);
 	
-	// console.log(text1.tagStyles);
-	// let timer = 0;
-	// const numFramesPerColor = 2000;
-	// app.stage.addChild(text1);
-	// Ticker.shared.add((delta) => {
-	// 	timer += delta;
-	// 	if (timer < numFramesPerColor / 60) return;
-	// 	timer = 0;
-	// 	colors = colors.slice(1).concat(colors[0]); // rotate colors
-	// 	// sizes = sizes.slice(1).concat(sizes[0]); // rotate sizes
-	// 	text1.textFields.forEach((t, i) => {
-	// 		t.style.fill = colors[i]
-	// 	});
-	// })
+	// Create array of 50 unique colors in descending order from the rainbow
+	// let colors = ["#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#8b00ff", "#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#8b00ff", "#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#8b00ff", "#ff0000", "#ff7f00", "#ffff00", "#00ff00", "#0000ff", "#4b0082", "#8b00ff", ]
+	// @ts-ignore
+	let colors2 = Array.from({length: 50}, (_, i) => {
+		const hue = i / 50 * 360;
+		const rgb = hsl2rgb(hue / 360, 1, 0.5);
+		return utils.rgb2hex(rgb);
+	});
+	let timer = 0;
+	const numFramesPerColor = 300;
+	Ticker.shared.add((delta) => {
+		timer += delta;
+		if (timer < numFramesPerColor / 60) return;
+		timer = 0;
+		colors2 = colors2.slice(1).concat(colors2[0]); // rotate colors
+		// sizes = sizes.slice(1).concat(sizes[0]); // rotate sizes
+		text1.textFields.forEach((t, i) => {
+			t.style.fill = colors2[i]
+		});
+	})
 }
