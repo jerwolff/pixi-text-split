@@ -1,6 +1,6 @@
 import TaggedText from "pixi-tagged-text";
 import { WebfontLoaderPlugin } from "pixi-webfont-loader";
-import { Application, Loader, Sprite, Ticker } from "pixi.js";
+import { Application, Loader } from "pixi.js";
 
 Loader.registerPlugin(WebfontLoaderPlugin)
 
@@ -15,7 +15,7 @@ const app = new Application({
 	height: 480
 });
 
-loader.add("Students", "../fonts/tss.ttf");
+loader.add("Students", "https://cdn.rhon.us/fonts/sweater_school_rg.otf");
 loader.add("./clampy.png");
 
 loader.onComplete.add(() => start);
@@ -24,40 +24,48 @@ loader.load(start);
 function start () {
 	console.log("AESDF")
 
-	const clampy: Sprite = Sprite.from("clampy.png");
-
-	clampy.anchor.set(0.5);
-
-	clampy.x = app.screen.width / 2;
-	clampy.y = app.screen.height / 2;
-
-	app.stage.addChild(clampy);
+	// const clampy: Sprite = Sprite.from("clampy.png");
+	//
+	// clampy.anchor.set(0.5);
+	//
+	// clampy.x = app.screen.width / 2;
+	// clampy.y = app.screen.height / 2;
+	//
+	// app.stage.addChild(clampy);
 	
 	const text1 = new TaggedText("Hello", {default: {
 			fontFamily: "Students",
 			fontSize: 120,
 			textTransform  : "capitalize",
-		}}, {debug: true, debugConsole: true, splitStyle: "characters"});
+		}}, {debugConsole: true, splitStyle: "characters"});
 	
-	let colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#00ffff", "#ff00ff", "#ffffff", "#000000"];
-	let sizes = [240, 160, 120, 100, 80, 60, 40, 20];
+	// text1.interactive = true;
 	
-	console.log(text1.textFields.forEach((t, i) => t.style.fill=colors[i]));
+	text1.on("pointerdown", () => {
+		window.alert("CLICKED " + text1.text);
+	});
+	
+	text1.textFields.forEach((t) => {
+		t.interactive = true;
+		t.on("click", () => {
+			t.style.fill = "#ff0000";
+		})
+	});
+	
+	app.stage.addChild(text1);
 	
 	// console.log(text1.tagStyles);
-	let timer = 0;
-	const numFramesPerColor = 400;
-	app.stage.addChild(text1);
-	Ticker.shared.add((delta) => {
-		timer += delta;
-		if (timer < 1000 / numFramesPerColor) return;
-		timer = 0;
-		colors = colors.slice(1).concat(colors[0]); // rotate colors
-		sizes = sizes.slice(1).concat(sizes[0]); // rotate sizes
-		text1.textFields.forEach((t, i) => {
-			t.style.fill = colors[i]
-			t.style.fontSize = sizes[i]
-		});
-		text1.setText("nowwa")
-	})
+	// let timer = 0;
+	// const numFramesPerColor = 2000;
+	// app.stage.addChild(text1);
+	// Ticker.shared.add((delta) => {
+	// 	timer += delta;
+	// 	if (timer < numFramesPerColor / 60) return;
+	// 	timer = 0;
+	// 	colors = colors.slice(1).concat(colors[0]); // rotate colors
+	// 	// sizes = sizes.slice(1).concat(sizes[0]); // rotate sizes
+	// 	text1.textFields.forEach((t, i) => {
+	// 		t.style.fill = colors[i]
+	// 	});
+	// })
 }
