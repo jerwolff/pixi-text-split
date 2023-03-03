@@ -7,7 +7,9 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "pixi.js": "^7.1.2"
+    "pixi-tagged-text": "^3.11.0",
+    "pixi-webfont-loader": "^1.0.2",
+    "pixi.js": "^6"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",
