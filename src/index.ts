@@ -1,7 +1,7 @@
 import TaggedText from "pixi-tagged-text";
 import { WebfontLoaderPlugin } from "pixi-webfont-loader";
-import {Application, Loader} from "pixi.js";
-import {TaggedTextOptions} from "pixi-tagged-text/dist/types";
+import {Application, Container, Graphics, Loader} from "pixi.js";
+import {SplitStyle} from "pixi-tagged-text/dist/types";
 
 Loader.registerPlugin(WebfontLoaderPlugin)
 
@@ -14,7 +14,7 @@ const app = new Application({
 	autoDensity: true,
 	backgroundColor: 0x6495ed,
 	width: 2440,
-	height: 1440
+	height: 6000
 });
 
 loader.add("Sweater", "https://cdn.rhon.us/fonts/sweater_school_rg.otf");
@@ -24,53 +24,55 @@ loader.add("Open Sans", "https://fonts.gstatic.com/s/opensans/v34/memSYaGs126MiZ
 loader.add("./clampy.png");
 loader.add("button", "./button.png");
 
+const fonts = ["Sweater"];
+
 loader.onComplete.add(() => start);
 
 loader.load(start);
 
-const words1 = "The quick brown fox jumped over the lazy dog.\n"
-const words2 = "a b c d e f g h i j k l m n o p q r s t u v w x y z.\n"
-const words3 = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z."
+const words1 = "Hello and Goodbye"
 
-const fontSize = 32;
+const fontSize = 64;
 
 const settings = {
 	fontFamily: "Climate Crisis",
 	fontSize: fontSize,
-	wordWrapWidth: 800,
+	wordWrapWidth: 750,
 }
 
-const options: TaggedTextOptions = {
-	debug: true,
-}
-
-const taggedTexts: TaggedText[] = [];
-
-taggedTexts.push(new TaggedText("Arial\n" + words1 + words2 + words3, {default: {...settings, fontFamily: "Arial"}},
-	options));
-
-taggedTexts.push(new TaggedText("Garamond\n" + words1 + words2 + words3, {default: {...settings, fontFamily: "Garamond"}},
-	options));
-
-taggedTexts.push(new TaggedText("Montserrat\n" + words1 + words2 + words3, {default: {...settings, fontFamily: "Montserrat"}},
-	options));
-
-taggedTexts.push(new TaggedText("Sweater\n" + words1 + words2 + words3, {default: {...settings, fontFamily: "Sweater"}},
-	options));
-
-taggedTexts.push(new TaggedText("Open Sans\n" + words1 + words2 + words3, {default: {...settings, fontFamily: "Open Sans"}},
-	options));
-
-taggedTexts.push(new TaggedText("Climate Crisis\n" + words1 + words2 + words3, {default: settings},
-	options));
-function start () {
-	
-	for(let i=0; i < taggedTexts.length; i++) {
-		app.stage.addChild(taggedTexts[i]);
-		taggedTexts[i].x = 100;
-		taggedTexts[i].y = 100 + i * 200;
+function fontExample(settings: any, splitStyle?: SplitStyle) {
+	const container = new Container();
+	settings.fontFamily = 'Arial';
+	const title = new TaggedText("Split Style: " + splitStyle, {default: settings});
+	container.addChild(title);
+	for(let i=0; i < fonts.length; i++) {
+		settings.fontFamily = fonts[i];
+		const newText = new TaggedText(`${settings.fontFamily}\n${words1}`, {default: settings}, {debug: true, splitStyle: splitStyle});
+		newText.y = 100 + i * 300;
+		makeTextClickable(newText);
+		console.log(newText.width);
+		container.addChild(newText);
 	}
+	return container;
+}
+function start () {
+	const wordSplit = fontExample(settings, "words");
+	wordSplit.x = 100;
+	app.stage.addChild(wordSplit);
 	
+	const characterSplit = fontExample(settings, "characters");
+	characterSplit.x = 1000;
+	app.stage.addChild(characterSplit);
+}
+
+// @ts-ignore
+function drawUnderline(x: number, y: number, width: number) {
+	const underline = new Graphics();
+	underline.lineStyle(2, 0xff0000);
+	underline.moveTo(x, 0);
+	underline.lineTo(x + width, 0);
+	underline.y = 64;
+	return underline;
 }
 
 // @ts-ignore
@@ -79,7 +81,15 @@ function makeTextClickable (text: TaggedText) {
 	text.textFields.forEach((t) => {
 		t.interactive = true;
 		t.on("click", () => {
-			t.style.fill = "#ff0000";
+			if(t.style.fill === "#ff0000") t.style.fill = "#000000";
+			else {
+				t.style.fill = "#ff0000";
+			}
 		})
+		const lineContainer = new Container();
+		lineContainer.setTransform(t.x, t.y, 1, 1, 0, 0, 0, 0, 0);
+		text.addChild(lineContainer);
+		lineContainer.addChild(drawUnderline(0, 0, t.width));
+		// t.addChild(drawUnderline(t.x, t.y, t.width));
 	});
 }
