@@ -1,10 +1,10 @@
 import TaggedText from "pixi-tagged-text";
 import { WebfontLoaderPlugin } from "pixi-webfont-loader";
-import {Application, Loader, Ticker, utils} from "pixi.js";
-import {hsl2rgb} from "./hue2rgb";
-import Button from "./Button";
+import {Application, Container, Graphics, Loader} from "pixi.js";
+import {SplitStyle} from "pixi-tagged-text/dist/types";
 
 Loader.registerPlugin(WebfontLoaderPlugin)
+
 
 const loader = Loader.shared;
 
@@ -13,115 +13,83 @@ const app = new Application({
 	resolution: window.devicePixelRatio || 1,
 	autoDensity: true,
 	backgroundColor: 0x6495ed,
-	width: 1024,
-	height: 768
+	width: 2440,
+	height: 6000
 });
 
 loader.add("Sweater", "https://cdn.rhon.us/fonts/sweater_school_rg.otf");
+loader.add("Montserrat", "https://fonts.gstatic.com/s/montserrat/v25/JTUHjIg1_i6t8kCHKm4532VJOt5-QNFgpCtZ6Hw5aXo.woff2");
+loader.add("Climate Crisis", "https://fonts.gstatic.com/s/climatecrisis/v3/wEOpEB3AntNeKCPBVW9XOKlmp3AUgWFN1DvIvcM0gFpKiq8q.woff2");
+loader.add("Open Sans", "https://fonts.gstatic.com/s/opensans/v34/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjr0B4gaVI.woff2");
 loader.add("./clampy.png");
 loader.add("button", "./button.png");
+
+const fonts = ["Sweater"];
 
 loader.onComplete.add(() => start);
 
 loader.load(start);
 
-const words = "The quick brown fox jumped over the lazy dog."
+const words1 = "Hello and Goodbye"
 
-let rainbowText =  new TaggedText("rainbow\n\n" + words, {default: {
-		fontFamily: "Sweater",
-		fontSize: 64
-	}}, {});
+const fontSize = 64;
 
-let characterSplit = new TaggedText("character split\n\n" + words, {default: {
-		fontFamily: "Sweater",
-		fontSize: 64,
-	}}, {splitStyle: "characters"});
+const settings = {
+	fontFamily: "Climate Crisis",
+	fontSize: fontSize,
+	wordWrapWidth: 750,
+}
 
-let noSplit = new TaggedText("no split\n\n" + words, {default: {
-		fontFamily: "Sweater",
-		fontSize: 64,
-	}});
-
-let wordSplit = new TaggedText("word split\n\n" + words, {default: {
-		fontFamily: "Sweater",
-		fontSize: 64,
-	}}, {splitStyle: "words"});
-
-let tagExample = new TaggedText("We can also use custom tags for styling. Default and <smol>smol</smol> and <yuge>BIG</yuge>", {
-	default: {
-		fontFamily: "Arial",
-		fontSize: 64,
-		align: 'center'
-	},
-	smol: {
-		fontSize: 32,
-	},
-	yuge: {
-		fontSize: 128,
-	}});
-
-let things = [rainbowText, characterSplit, noSplit, wordSplit, tagExample];
-
-let currentThing = 0;
+function fontExample(settings: any, splitStyle?: SplitStyle) {
+	const container = new Container();
+	settings.fontFamily = 'Arial';
+	const title = new TaggedText("Split Style: " + splitStyle, {default: settings});
+	container.addChild(title);
+	for(let i=0; i < fonts.length; i++) {
+		settings.fontFamily = fonts[i];
+		const newText = new TaggedText(`${settings.fontFamily}\n${words1}`, {default: settings}, {debug: true, splitStyle: splitStyle});
+		newText.y = 100 + i * 300;
+		makeTextClickable(newText);
+		console.log(newText.width);
+		container.addChild(newText);
+	}
+	return container;
+}
 function start () {
+	const wordSplit = fontExample(settings, "words");
+	wordSplit.x = 100;
+	app.stage.addChild(wordSplit);
 	
-	const button = new Button({label: "Click me!", x: 300, y: 600, width: 200, height: 100, onTap: nextThing});
-	addRainbowText();
-	makeTextClickable(characterSplit);
-	makeTextClickable(noSplit);
-	makeTextClickable(wordSplit);
-	
-	app.stage.addChild(button);
+	const characterSplit = fontExample(settings, "characters");
+	characterSplit.x = 1000;
+	app.stage.addChild(characterSplit);
 }
 
-const nextThing = () => {
-	app.stage.removeChild(things[currentThing]);
-	currentThing = (currentThing + 1) % things.length;
-	app.stage.addChild(things[currentThing]);
+// @ts-ignore
+function drawUnderline(x: number, y: number, width: number) {
+	const underline = new Graphics();
+	underline.lineStyle(2, 0xff0000);
+	underline.moveTo(x, 0);
+	underline.lineTo(x + width, 0);
+	underline.y = 64;
+	return underline;
 }
 
-function addRainbowText () {
-
-	rainbowText.interactive = true;
-
-	rainbowText.on("pointerdown", () => {
-		window.alert("CLICKED " + rainbowText.text);
-	});
-
-	rainbowText.textFields.forEach((t) => {
-		t.interactive = true;
-		t.on("click", () => {
-			t.style.fill = "#ff0000";
-		})
-	});
-
-	// Create array of 50 unique colors in descending order from the rainbow
-	let colors2 = Array.from({length: 50}, (_, i) => {
-		const hue = i / 50 * 360;
-		const rgb = hsl2rgb(hue / 360, 1, 0.5);
-		return utils.rgb2hex(rgb);
-	});
-	let timer = 0;
-	const numFramesPerColor = 300;
-	Ticker.shared.add((delta) => {
-		timer += delta;
-		if (timer < numFramesPerColor / 60) return;
-		timer = 0;
-		colors2 = colors2.slice(1).concat(colors2[0]); // rotate colors
-		// sizes = sizes.slice(1).concat(sizes[0]); // rotate sizes
-		rainbowText.textFields.forEach((t, i) => {
-			t.style.fill = colors2[i]
-		});
-	})
-	
-}
-
+// @ts-ignore
 function makeTextClickable (text: TaggedText) {
 	text.interactive = true;
 	text.textFields.forEach((t) => {
 		t.interactive = true;
 		t.on("click", () => {
-			t.style.fill = "#ff0000";
+			if(t.style.fill === "#ff0000") t.style.fill = "#000000";
+			else {
+				t.style.fill = "#ff0000";
+			}
 		})
+		const lineContainer = new Container();
+		lineContainer.setTransform(t.x, t.y, 1, 1, 0, 0, 0, 0, 0);
+		text.addChild(lineContainer);
+		lineContainer.addChild(drawUnderline(0, 0, t.width));
+		// t.addChild(drawUnderline(t.x, t.y, t.width));
 	});
 }

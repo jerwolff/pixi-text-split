@@ -7,7 +7,7 @@
     "clean": "rimraf dist"
   },
   "dependencies": {
-    "pixi-tagged-text": "^3.11.0",
+    "pixi-tagged-text": "^3.12.0",
     "pixi-webfont-loader": "^1.0.2",
     "pixi.js": "^6"
   },
